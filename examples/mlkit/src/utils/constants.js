@@ -3,6 +3,6 @@ const PERMISSIONS = {
   message: 'We need your permission to use your camera',
   buttonPositive: 'Ok',
   buttonNegative: 'Cancel',
-}
+};
 
 export { PERMISSIONS };

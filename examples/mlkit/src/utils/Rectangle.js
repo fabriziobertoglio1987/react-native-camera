@@ -18,4 +18,4 @@ export function getFramingRect(screen) {
     height: 400,
     landscapeMode: false,
   };
-};
+}

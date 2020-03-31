@@ -6,7 +6,7 @@ import { getFramingRect } from './Rectangle';
 
 const Camera = () => {
   const dimensions = useDimensions();
-  const onBarCodeRead = useCallback((result) => {
+  const onBarCodeRead = useCallback(result => {
     if (result) {
       const { type, data } = result;
       if (data) {
@@ -21,8 +21,9 @@ const Camera = () => {
       rectOfInterest={getFramingRect(dimensions.screen)}
       androidCameraPermissionOptions={PERMISSIONS}
       style={{ height: dimensions.screen.height }}
-      type={RNCamera.Constants.Type.back} />
+      type={RNCamera.Constants.Type.back}
+    />
   );
-}
+};
 
 export default Camera;
