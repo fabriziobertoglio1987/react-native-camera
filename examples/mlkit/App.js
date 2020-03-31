@@ -23,12 +23,9 @@ const App: () => React$Node = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <Button
-        title="Show/hide camera"
-        onPress={() => setShowCamera(!showCamera)}
-      />
+      <Button title="Show/hide camera" onPress={() => setShowCamera(!showCamera)} />
       <View style={{ flex: 1 }} />
-      { showCamera ? <Camera /> : <View /> }
+      {showCamera ? <Camera /> : <View />}
     </View>
-  ); 
+  );
 };
