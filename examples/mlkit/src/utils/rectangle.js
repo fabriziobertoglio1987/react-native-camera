@@ -12,10 +12,11 @@ export function getFramingRect(screen) {
   //   landscapeMode: ?,
   // };
   return {
-    x: 500,
-    y: 192,
-    width: 500,
+    dataWidth: 1440,
+    dataHeight: 1080,
+    left: 300,
+    top: 400,
+    width: 800,
     height: 400,
-    landscapeMode: false,
   };
 }
