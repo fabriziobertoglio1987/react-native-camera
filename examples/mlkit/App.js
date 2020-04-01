@@ -1,8 +1,8 @@
 import React, { useCallback, useState } from 'react';
-import { View, Button, StyleSheet } from 'react-native';
-import Camera from './src/utils/Camera';
+import { View, Button, StyleSheet, Text } from 'react-native';
+import { Camera } from './src/Camera';
 
-const App: () => React$Node = () => {
+function App() {
   const [showCamera, setShowCamera] = useState(true);
 
   const styles = StyleSheet.create({
@@ -29,3 +29,5 @@ const App: () => React$Node = () => {
     </View>
   );
 };
+
+export default App;
