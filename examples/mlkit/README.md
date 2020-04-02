@@ -1,5 +1,5 @@
 # Rectangle Of Interest for Barcode Scanning (Android)
-
+<img src="https://user-images.githubusercontent.com/24992535/78279966-9fddce80-7518-11ea-93b6-0340a217d53a.jpg" alt="alt text" width="400px" height="whatever">
 Simple example on how to use the `rectOfInterest` on Android. The current version does not take in consideration the Phone Orientation (will be implemented lated using hook `useDimensions`) and `distorsions`.
 
 [`Camera.js`][10] will retrieve the Image and Preview resolution via the react native brige once `onCameraReady` is triggered.
@@ -13,7 +13,7 @@ import Frame from './Frame';
 import { PERMISSIONS } from './utils/constants';
 import { getRect, emptyRect } from './utils/rectangle';
 
-function Camera() {
+function Camera () {
   var cameraRef = useRef(null);
   const dimensions = useDimensions();
   const [rectOfInterest, setRectOfInterest] = useState(emptyRect);
@@ -31,27 +31,25 @@ function Camera() {
     const resolutions = await cameraRef.getCameraSettings();
     const rectOfInterest = getRect(resolutions.preview);
     setRectOfInterest(rectOfInterest);
-  };
+  }
 
   return (
     <RNCamera
-      ref={ref => {
-        cameraRef = ref;
-      }}
+      ref={ref => { cameraRef = ref; }}
       captureAudio={false}
       onBarCodeRead={onBarCodeRead}
       androidCameraPermissionOptions={PERMISSIONS}
       style={{ height: dimensions.screen.height }}
       type={RNCamera.Constants.Type.back}
       onCameraReady={onCameraReady}
-      rectOfInterest={rectOfInterest}
-    >
+      rectOfInterest={rectOfInterest}>
       <Frame rect={rectOfInterest} />
     </RNCamera>
   );
-}
+};
 
 export default Camera;
+
 ```
 
 The [`rectangle.js`][11] file uses the image and preview resolution to calculate the `rectOfInterest` cropping parameters.
@@ -70,38 +68,36 @@ const getRect = function(preview) {
     width: WIDTH,
     height: HEIGHT,
   };
-};
+}
 
 const emptyRect = {
-  dataWidth: 0,
-  dataHeight: 0,
-  left: 0,
-  top: 0,
-  width: 0,
-  height: 0,
-};
+  dataWidth: 0, 
+  dataHeight: 0, 
+  left: 0, 
+  top: 0, 
+  width: 0, 
+  height: 0
+}
 
 const getFrameDimensions = function(screen, rect) {
-  const isEmpty = rect === emptyRect;
-  if (isEmpty) {
-    return emptyFrame;
-  }
-  const heightToPixel = screen.height / rect.dataWidth;
+  const isEmpty = rect === emptyRect
+  if (isEmpty) { return emptyFrame; };
+  const heightToPixel = screen.height / rect.dataWidth;    
   const widthToPixel = screen.width / rect.dataHeight;
   return {
     top: rect.top * heightToPixel,
     left: rect.left * widthToPixel,
     height: rect.width * widthToPixel,
     width: rect.height * heightToPixel,
-  };
-};
+  }
+}
 
 const emptyFrame = {
   left: 0,
   top: 0,
   width: 0,
-  height: 0,
-};
+  height: 0
+}
 
 export { getRect, emptyRect, getFrameDimensions };
 ```
@@ -113,15 +109,13 @@ The below more complex example explains how to avoid distorsions.
 [11]: https://github.com/fabriziobertoglio1987/react-native-camera/blob/encapsulating-logic-in-area-class/example/examples/mlkit/src/utils/rectangle.js
 [12]: https://github.com/fabriziobertoglio1987/react-native-camera/blob/encapsulating-logic-in-area-class/example/examples/mlkit/src/Frame.js
 
-<img src="https://user-images.githubusercontent.com/24992535/78279966-9fddce80-7518-11ea-93b6-0340a217d53a.jpg" alt="alt text" width="400px" height="whatever">
 
 ## Avoiding Distortions between Image/Camera and Preview Resolution
-
 Based on the [`zxing android`](https://github.com/zxing/zxing/tree/a65631d0b643e778b8b1c1975e4f18f35e401fa4/android) Demo SourceCode I can implement this solution in ReactNative:
 
-1. The method [`getFramingRect()`][2] called from [`buildLuminanceSource()`][3] calculates a [`Reactangle`](https://github.com/zxing/zxing/blob/a65631d0b643e778b8b1c1975e4f18f35e401fa4/android/src/com/google/zxing/client/android/camera/CameraManager.java#L300).
-2. The `reactangle` is calculated based on the [screen resolution](<https://developer.android.com/reference/android/view/WindowManager#getCurrentWindowMetrics()>), [camera resolution][15] and original image `width` and `height`.
-3. [`buildLuminanceSource()`][3] calls [`PlanarYUVLuminanceSource`](https://zxing.github.io/zxing/apidocs/com/google/zxing/PlanarYUVLuminanceSource.html) to crop and scan the image.
+1) The method [`getFramingRect()`][2] called from [`buildLuminanceSource()`][3] calculates a [`Reactangle`](https://github.com/zxing/zxing/blob/a65631d0b643e778b8b1c1975e4f18f35e401fa4/android/src/com/google/zxing/client/android/camera/CameraManager.java#L300).
+2) The `reactangle` is calculated based on the [screen resolution](https://developer.android.com/reference/android/view/WindowManager#getCurrentWindowMetrics()), [camera resolution][15] and original image `width` and `height`. 
+3) [`buildLuminanceSource()`][3] calls [`PlanarYUVLuminanceSource`](https://zxing.github.io/zxing/apidocs/com/google/zxing/PlanarYUVLuminanceSource.html) to crop and scan the image.
 
 [1]: https://play.google.com/store/apps/details?id=com.google.zxing.client.android
 [2]: https://github.com/zxing/zxing/blob/a65631d0b643e778b8b1c1975e4f18f35e401fa4/android/src/com/google/zxing/client/android/camera/CameraManager.java#L213-L233
