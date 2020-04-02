@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { View, Button, StyleSheet, Text } from 'react-native';
-import { Camera } from './src/Camera';
+import Camera from './src/Camera';
 
 function App() {
   const [showCamera, setShowCamera] = useState(true);
