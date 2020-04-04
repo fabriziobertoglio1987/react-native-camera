@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useDimensions } from '@react-native-community/hooks';
 import { getFrameDimensions } from './utils/rectangle';
  
-function Frame({ rect }) {
-  const screen = useDimensions().screen;
-  const position = getFrameDimensions(screen, rect);
+function Frame({ rect, screen}) {
+  const position = getFrameDimensions(rect, screen);
+  console.log(position);
   const style = {
     position: 'absolute',
     left: position.left,

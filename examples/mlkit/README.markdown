@@ -1,5 +1,21 @@
 # Rectangle Of Interest for Barcode Scanning (Android)
 <img src="https://user-images.githubusercontent.com/24992535/78279966-9fddce80-7518-11ea-93b6-0340a217d53a.jpg" alt="alt text" width="400px" height="whatever">
+
+## Calculating Cropping Parameters
+```javascript
+portrait = {
+  dataWidth: 1080,
+  dataHeight: 1440,
+  left: 500,
+  top: 100,
+  width: 600,
+  height: 900
+}
+```
+
+<img src="https://fabriziobertoglio.s3.eu-central-1.amazonaws.com/opensource/react-native-camera/portraitWithRuler.png" alt="alt text" width="600px" height="whatever">
+
+<img src="https://fabriziobertoglio.s3.eu-central-1.amazonaws.com/opensource/react-native-camera/portraitWithRuler.png" alt="alt text" width="600px" height="whatever">
 Simple example on how to use the `rectOfInterest` on Android. The current version does not take in consideration the Phone Orientation (will be implemented lated using hook `useDimensions`) and `distorsions`.
 
 [`Camera.js`][10] will retrieve the Image and Preview resolution via the react native brige once `onCameraReady` is triggered.
