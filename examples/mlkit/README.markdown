@@ -1,7 +1,23 @@
-# Rectangle Of Interest for Barcode Scanning (Android)
-<img src="https://user-images.githubusercontent.com/24992535/78279966-9fddce80-7518-11ea-93b6-0340a217d53a.jpg" alt="alt text" width="400px" height="whatever">
+# Table of Contents  
 
-## Calculating Cropping Parameters
+1. [Barcode Rectangle Of Interest (Android)](#barcode-rectangle-of-interest-(android))
+2. [Visual Explanation](#visual-explanation)
+3. [Javascript Implementation](#javascript-implementation)
+4. [Distorsions](#distorsions)
+5. [Avoiding Distortions](#avoiding-distortions)
+6. [Further Help](#further-help)
+
+# Barcode Rectangle Of Interest (Android)
+<p align="center">
+  <img src="https://fabriziobertoglio.s3.eu-central-1.amazonaws.com/opensource/react-native-camera/demo_landscape.png" alt="alt text" width="whatever" height="300px">
+</p>
+
+### Visual Explanation
+
+This is a visual explanation of the cropping parameters in Landscape mode. `dataWidth` and `dataHeight` are the `preview` dimensions returned from the method [`cameraRef.getCameraSettings()`][20].
+
+
+[20]: https://github.com/fabriziobertoglio1987/react-native-camera/blob/encapsulating-logic-in-area-class/example/examples/mlkit/src/Camera.js#L35
 
 ```javascript
 landscape = {
@@ -13,7 +29,11 @@ landscape = {
   height: 600,
 }
 ```
-<img src="https://fabriziobertoglio.s3.eu-central-1.amazonaws.com/opensource/react-native-camera/landscapeWithRuler.png" alt="alt text" width="600px" height="whatever">
+<p align="center">
+  <img src="https://fabriziobertoglio.s3.eu-central-1.amazonaws.com/opensource/react-native-camera/landscapeWithRuler.png" alt="alt text" width="600px" height="whatever">
+</p>
+
+The same parameters are inverted in `Portrait` mode.
 
 ```javascript
 portrait = {
@@ -26,15 +46,20 @@ portrait = {
 }
 ```
 
-<img src="https://fabriziobertoglio.s3.eu-central-1.amazonaws.com/opensource/react-native-camera/portraitWithRuler.png" alt="alt text" width="600px" height="whatever">
+<p align="center">
+  <img src="https://fabriziobertoglio.s3.eu-central-1.amazonaws.com/opensource/react-native-camera/portraitWithRuler.png" alt="alt text" width="600px" height="whatever">
+</p>
 
-Simple example on how to use the `rectOfInterest` on Android. The current version does not take in consideration the Phone Orientation (will be implemented lated using hook `useDimensions`) and `distorsions`.
+### Javascript Implementation
+
+Simple example on how to use the `rectOfInterest` on Android. 
 [`Camera.js`][10] will retrieve the Image and Preview resolution via the react native brige once `onCameraReady` is triggered.
 
 ```javascript
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState, useEffect } from 'react';
 import { Button } from 'react-native';
 import { useDimensions } from '@react-native-community/hooks';
+import { useDeviceOrientation } from '@react-native-community/hooks'
 import { RNCamera } from 'react-native-camera';
 import Frame from './Frame';
 import { PERMISSIONS } from './utils/constants';
@@ -43,7 +68,10 @@ import { getRect, emptyRect } from './utils/rectangle';
 function Camera () {
   var cameraRef = useRef(null);
   const dimensions = useDimensions();
+  const screen = dimensions.screen;
+  const window = dimensions.window;
   const [rectOfInterest, setRectOfInterest] = useState(emptyRect);
+  const [resolutions, setResolutions] = useState(null);
 
   const onBarCodeRead = useCallback(result => {
     if (result) {
@@ -52,11 +80,19 @@ function Camera () {
         console.log('code', data);
       }
     }
-  }, []);
+  });
+
+  useEffect(() => {
+    if(resolutions) {
+      const rectOfInterest = getRect(resolutions.preview, screen);
+      setRectOfInterest(rectOfInterest);
+    }
+  }, [screen])
 
   onCameraReady = async () => {
     const resolutions = await cameraRef.getCameraSettings();
-    const rectOfInterest = getRect(resolutions.preview);
+    const rectOfInterest = getRect(resolutions.preview, screen);
+    setResolutions(resolutions);
     setRectOfInterest(rectOfInterest);
   }
 
@@ -66,35 +102,39 @@ function Camera () {
       captureAudio={false}
       onBarCodeRead={onBarCodeRead}
       androidCameraPermissionOptions={PERMISSIONS}
-      style={{ height: dimensions.screen.height }}
+      style={{ height: screen.height }}
       type={RNCamera.Constants.Type.back}
       onCameraReady={onCameraReady}
       rectOfInterest={rectOfInterest}>
-      <Frame rect={rectOfInterest} />
+      <Frame 
+        rect={rectOfInterest} 
+        window={window}/>
     </RNCamera>
   );
 };
 
 export default Camera;
-
 ```
 
-The [`rectangle.js`][11] file uses the image and preview resolution to calculate the `rectOfInterest` cropping parameters.
+The [`rectangle.js`][11] file uses the preview resolution to calculate the `rectOfInterest` cropping parameters.
 
 ```javascript
-const getRect = function(preview) {
-  const WIDTH = 800;
-  const HEIGHT = 400;
-  const left = (preview.width - WIDTH) / 2;
-  const top = (preview.height - HEIGHT) / 2;
+const getRect = function(preview, screen) {
+  const landscape = screen.width > screen.height;
+  const dataWidth = landscape ? preview.width : preview.height;
+  const dataHeight = landscape ? preview.height : preview.width;
+  const WIDTH = landscape ? 600 : 800;
+  const HEIGHT = landscape ? 600 : 500;
+  const left = (dataWidth - WIDTH) / 2;
+  const top = (dataHeight - HEIGHT) / 2;
   return {
-    dataWidth: preview.width,
-    dataHeight: preview.height,
+    dataWidth,
+    dataHeight,
     left,
     top,
     width: WIDTH,
-    height: HEIGHT,
-  };
+    height: HEIGHT
+  }
 }
 
 const emptyRect = {
@@ -106,16 +146,21 @@ const emptyRect = {
   height: 0
 }
 
-const getFrameDimensions = function(screen, rect) {
+const getFrameDimensions = function(rect, window) {
   const isEmpty = rect === emptyRect
   if (isEmpty) { return emptyFrame; };
-  const heightToPixel = screen.height / rect.dataWidth;    
-  const widthToPixel = screen.width / rect.dataHeight;
+  const landscape = window.width > window.height;
+  const heightToPixel = window.height / rect.dataHeight;    
+  const widthToPixel = window.width / rect.dataWidth;
+  const top = rect.top * heightToPixel;
+  const left = rect.left * widthToPixel;
+  const width = rect.width * widthToPixel;
+  const height = rect.height * heightToPixel;
   return {
-    top: rect.top * heightToPixel,
-    left: rect.left * widthToPixel,
-    height: rect.width * widthToPixel,
-    width: rect.height * heightToPixel,
+    left,
+    top,
+    width,
+    height
   }
 }
 
@@ -136,8 +181,35 @@ The below more complex example explains how to avoid distorsions.
 [11]: https://github.com/fabriziobertoglio1987/react-native-camera/blob/encapsulating-logic-in-area-class/example/examples/mlkit/src/utils/rectangle.js
 [12]: https://github.com/fabriziobertoglio1987/react-native-camera/blob/encapsulating-logic-in-area-class/example/examples/mlkit/src/Frame.js
 
+### Distorsions
 
-## Avoiding Distortions between Image/Camera and Preview Resolution
+This are the distortions created from scanning barcodes with a rectangle of interest, calculated on the image Aspect Ratio and then adapted to the screen Aspect Ratio.
+
+Original Image resolution
+<p align="center">
+  <img src="https://fabriziobertoglio.s3.eu-central-1.amazonaws.com/opensource/react-native-camera/demo_landscape.png" alt="alt text" width="whatever" height="300px">
+</p>
+
+Image become distorted when adapted to different aspect ratio (1440 width x 1080 height)
+
+<p align="center">
+  <img src="https://fabriziobertoglio.s3.eu-central-1.amazonaws.com/opensource/react-native-camera/landscape.png" alt="alt text" width="whatever" height="300px">
+</p>
+
+Original Image resolution
+
+<p align="center">
+  <img src="https://fabriziobertoglio.s3.eu-central-1.amazonaws.com/opensource/react-native-camera/demo_portrait.png" alt="alt text" width="whatever" height="300px">
+</p>
+
+Image become distorted when adapted to different aspect ratio (1080 width x 1440 height)
+
+<p align="center">
+  <img src="https://fabriziobertoglio.s3.eu-central-1.amazonaws.com/opensource/react-native-camera/portrait.png" alt="alt text" width="whatever" height="300px">
+</p>
+
+### Avoiding Distortions 
+
 Based on the [`zxing android`](https://github.com/zxing/zxing/tree/a65631d0b643e778b8b1c1975e4f18f35e401fa4/android) Demo SourceCode I can implement this solution in ReactNative:
 
 1) The method [`getFramingRect()`][2] called from [`buildLuminanceSource()`][3] calculates a [`Reactangle`](https://github.com/zxing/zxing/blob/a65631d0b643e778b8b1c1975e4f18f35e401fa4/android/src/com/google/zxing/client/android/camera/CameraManager.java#L300).
@@ -208,6 +280,11 @@ public PlanarYUVLuminanceSource buildLuminanceSource(byte[] data, int width, int
 
 ```
 
+### Further Help
+Feel free to [open an issue](https://github.com/react-native-community/react-native-camera/issues) in the `react-native-camera` repository, if you need extra help you can check out our subscriptions on [tidelift](https://issuehunt.io/r/react-native-community/react-native-camera) and [issue hunt](https://tidelift.com/subscription/pkg/npm-react-native-camera?utm_source=npm-react-native-camera&utm_medium=referral&utm_campaign=enterprise&utm_term=repo)... Thanks a lot for the support!
+
+> Love react-native-camera? Please consider supporting our collective: 👉  https://opencollective.com/react-native-camera/donate
+> Want this feature to be resolved faster? Please consider adding a bounty to it https://issuehunt.io/repos/33218414
 # React Native Camera MLKit Example
 
 An example project demonstrating the use of MLKit-based Text and Face Recognition features of react-native-camera.
