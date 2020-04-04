@@ -9,8 +9,9 @@ import { getRect, emptyRect } from './utils/rectangle';
 
 function Camera () {
   var cameraRef = useRef(null);
-  const screen = useDimensions().screen;
-  // const orientation = useDeviceOrientation();
+  const dimensions = useDimensions();
+  const screen = dimensions.screen;
+  const window = dimensions.window;
   const [rectOfInterest, setRectOfInterest] = useState(emptyRect);
   const [resolutions, setResolutions] = useState(null);
 
@@ -27,14 +28,12 @@ function Camera () {
     if(resolutions) {
       const rectOfInterest = getRect(resolutions.preview, screen);
       setRectOfInterest(rectOfInterest);
-      console.log('rectOfInterest', rectOfInterest);
     }
   }, [screen])
 
   onCameraReady = async () => {
     const resolutions = await cameraRef.getCameraSettings();
     const rectOfInterest = getRect(resolutions.preview, screen);
-    console.log('rectOfInterest', rectOfInterest);
     setResolutions(resolutions);
     setRectOfInterest(rectOfInterest);
   }
@@ -49,11 +48,9 @@ function Camera () {
       type={RNCamera.Constants.Type.back}
       onCameraReady={onCameraReady}
       rectOfInterest={rectOfInterest}>
-      {/*
       <Frame 
         rect={rectOfInterest} 
-        screen={screen}/>
-      */}
+        window={window}/>
     </RNCamera>
   );
 };
