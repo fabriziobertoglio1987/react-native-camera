@@ -1,4 +1,4 @@
-const getRect = function(preview, screen) {
+const getRectangle = function(preview, screen) {
   const landscape = screen.width > screen.height;
   const dataWidth = landscape ? preview.width : preview.height;
   const dataHeight = landscape ? preview.height : preview.width;
@@ -16,7 +16,7 @@ const getRect = function(preview, screen) {
   }
 }
 
-const emptyRect = {
+const emptyRectangle = {
   dataWidth: 0, 
   dataHeight: 0, 
   left: 0, 
@@ -26,7 +26,7 @@ const emptyRect = {
 }
 
 const getFrameDimensions = function(rect, window) {
-  const isEmpty = rect === emptyRect
+  const isEmpty = rect === emptyRectangle;
   if (isEmpty) { return emptyFrame; };
   const landscape = window.width > window.height;
   const heightToPixel = window.height / rect.dataHeight;    
@@ -43,6 +43,19 @@ const getFrameDimensions = function(rect, window) {
   }
 }
 
+const getFrameStyle = function(position) {
+  return {
+    position: 'absolute',
+    left: position.left,
+    top: position.top,
+    width: position.width,
+    height: position.height,
+    borderWidth: 7,
+    borderColor: 'red',
+    opacity: 0.5
+  };
+};
+
 const emptyFrame = {
   left: 0,
   top: 0,
@@ -50,4 +63,4 @@ const emptyFrame = {
   height: 0
 }
 
-export { getRect, emptyRect, getFrameDimensions };
+export { getRectangle, emptyRectangle, getFrameDimensions, getFrameStyle };

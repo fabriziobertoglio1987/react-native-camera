@@ -1,19 +1,19 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
-import { Button } from 'react-native';
+import { Button, View } from 'react-native';
 import { useDimensions } from '@react-native-community/hooks';
 import { useDeviceOrientation } from '@react-native-community/hooks'
 import { RNCamera } from 'react-native-camera';
-import Frame from './Frame';
 import { PERMISSIONS } from './utils/constants';
-import { getRect, emptyRect } from './utils/rectangle';
+import { getRectangle, emptyRectangle, getFrameDimensions, getFrameStyle } from './utils/rectangle';
 
 function Camera () {
   var cameraRef = useRef(null);
   const dimensions = useDimensions();
   const screen = dimensions.screen;
   const window = dimensions.window;
-  const [rectOfInterest, setRectOfInterest] = useState(emptyRect);
+  const [rectangle, setRectangle] = useState(emptyRectangle);
   const [resolutions, setResolutions] = useState(null);
+  const [frameStyle, setFrameStyle] = useState(null);
 
   const onBarCodeRead = useCallback(result => {
     if (result) {
@@ -26,16 +26,22 @@ function Camera () {
 
   useEffect(() => {
     if(resolutions) {
-      const rectOfInterest = getRect(resolutions.preview, screen);
-      setRectOfInterest(rectOfInterest);
+      const rectangle = getRectangle(resolutions.preview, screen);
+      const frameDimensions = getFrameDimensions(rectangle, screen);
+      const frameStyle = getFrameStyle(frameDimensions);
+      setRectangle(rectangle);
+      setFrameStyle(frameStyle);
     }
   }, [screen])
 
   onCameraReady = async () => {
     const resolutions = await cameraRef.getCameraSettings();
-    const rectOfInterest = getRect(resolutions.preview, screen);
+    const rectangle = getRectangle(resolutions.preview, screen);
+    const frameDimensions = getFrameDimensions(rectangle, screen);
+    const frameStyle = getFrameStyle(frameDimensions);
     setResolutions(resolutions);
-    setRectOfInterest(rectOfInterest);
+    setRectangle(rectangle);
+    setFrameStyle(frameStyle);
   }
 
   return (
@@ -47,12 +53,11 @@ function Camera () {
       style={{ height: screen.height }}
       type={RNCamera.Constants.Type.back}
       onCameraReady={onCameraReady}
-      rectOfInterest={rectOfInterest}>
-      <Frame 
-        rect={rectOfInterest} 
-        window={window}/>
+      planarLuminanceSourceParams={rectangle}>
+      <View style={frameStyle} />
     </RNCamera>
   );
 };
 
 export default Camera;
+
