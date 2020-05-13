@@ -50,6 +50,7 @@ export default class CameraScreen extends React.Component {
       mute: false,
       maxDuration: 5,
       quality: RNCamera.Constants.VideoQuality['288p'],
+      fps: 10,
     },
     isRecording: false,
     canDetectFaces: false,
@@ -136,11 +137,17 @@ export default class CameraScreen extends React.Component {
     if (this.camera && !isRecording) {
       try {
         const promise = this.camera.recordAsync(this.state.recordOptions);
+        const promise1 = this.camera.getSupportedPreviewFpsRange();
 
         if (promise) {
           this.setState({ isRecording: true });
           const data = await promise;
           console.warn('takeVideo', data);
+        }
+
+        if (promise1) {
+          const fps = await promise1;
+          console.warn('fps', fps);
         }
       } catch (e) {
         console.error(e);
