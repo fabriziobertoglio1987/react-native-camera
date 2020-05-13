@@ -142,7 +142,6 @@ export default class CameraScreen extends React.Component {
           const fps = await this.camera.getSupportedPreviewFpsRange();
           console.warn('fps', fps);
         };
-
         if (promise) {
           this.setState({ isRecording: true });
           const data = await promise;
