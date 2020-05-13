@@ -8,6 +8,7 @@ import {
   Slider,
   TouchableWithoutFeedback,
   Dimensions,
+  Platform,
 } from 'react-native';
 // eslint-disable-next-line import/no-unresolved
 import { RNCamera } from 'react-native-camera';
@@ -137,7 +138,10 @@ export default class CameraScreen extends React.Component {
     if (this.camera && !isRecording) {
       try {
         const promise = this.camera.recordAsync(this.state.recordOptions);
-        const promise1 = this.camera.getSupportedPreviewFpsRange();
+        if(Platform.OS != 'ios') {
+          const fps = await this.camera.getSupportedPreviewFpsRange();
+          console.warn('fps', fps);
+        };
 
         if (promise) {
           this.setState({ isRecording: true });
@@ -145,10 +149,6 @@ export default class CameraScreen extends React.Component {
           console.warn('takeVideo', data);
         }
 
-        if (promise1) {
-          const fps = await promise1;
-          console.warn('fps', fps);
-        }
       } catch (e) {
         console.error(e);
       }
